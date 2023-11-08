@@ -1,35 +1,41 @@
 import express from 'express';
-import mongoose from 'mongoose';
-import 'dotenv/config';
-const { Schema } = mongoose;
+import database from './databaseConnection.js'
+import bodyParser from 'body-parser';
+import users from './models/usersModel.js'
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
 
-const mongodb_host = process.env.MONGODB_HOST;
-const mongodb_user = process.env.MONGODB_USER;
-const mongodb_password = process.env.MONGODB_PASSWORD;
-const mongodb_database = process.env.MONGODB_DATABASE;
-
-const uri = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}?retryWrites=true&w=majority`
-
-mongoose.connect(uri);
-const database = mongoose.connection;
-
-// const todo = new Schema({
-//     title: String,
-//     category: String,
-//     author: String,
-// })
-
-// const user = new Schema({
-//     username: String,
-//     password: String,
-// })
+const db = database
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
 })
 
+app.get('/login', (req, res) => {
+    res.sendFile('login.html', { root: './views' });
+});
+
+app.post('/login', async (req, res) => {
+    console.log("login attempt");
+    var {
+        username,
+        password
+    } = req.body;
+    console.log(username, password)
+    const existingUser = await users.find({ username: username, password: password });
+    if (existingUser) {
+        res.send("Login successful")
+    }
+})
+
+// app.get('/signup', (req, res) => {})
+
+// app.get('/getTodos', (req, res) => {})
+
+// app.post(`/deleteTodo`, (req, res) => {})
+
+// app.post(`/updateTodo`, (req, res) => {})
 
 app.listen(3000, () => {
     console.log(`Server is running on port 3000`);
