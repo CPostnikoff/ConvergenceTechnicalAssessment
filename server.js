@@ -40,7 +40,7 @@ app.post('/login', async (req, res) => {
         }
 
     } catch (error) {
-        return res.status(500).send('Internal server error');
+        return res.status(500).send('Error occured within login');
     }
 });
 
@@ -69,9 +69,6 @@ app.post('/todos', verifyToken, async (req, res) => {
     } else {
         res.status(401).send("Unauthorized to create a todo")
     }
-    
-    // TODO: validate that the todo was created properly
-    res.send("post todos reached")
 });
 
 app.get('/todos', verifyToken, async (req, res) => {
@@ -86,7 +83,7 @@ app.get('/todos', verifyToken, async (req, res) => {
             const returnedTodos = await todos.find(query);
             res.send(returnedTodos);
         } catch (error) {
-            res.status(500).send('Internal server error');
+            res.status(500).send('Error fetching todos');
         }
     } else {
         res.status(401).send("Unauthorized to view todos")
@@ -116,7 +113,7 @@ app.put('/todos', verifyToken, async (req, res) => {
             res.status(404).send('Todo not found');
         }
     } catch (error) {
-        res.status(500).send('Internal server error');
+        res.status(500).send('Error fetching todos');
     }
 });
 
@@ -139,7 +136,7 @@ app.delete('/todos', verifyToken, async (req, res) => {
             res.status(404).send('Todo not found');
         }
     } catch (error) {
-        res.status(500).send('Internal server error');
+        res.status(500).send('Error fetching todos');
     }
 });
 
