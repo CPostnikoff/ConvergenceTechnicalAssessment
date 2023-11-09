@@ -16,12 +16,6 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 })
 
-// User registration
-// Not implemented
-app.post('/register', async (req, res) => {
-    // Validate and store user information in the database
-});
-
 app.post('/login', async (req, res) => {
     // Extract username and password from the request body (assuming they are in the request body, not query parameters)
     const { username, password } = req.query;
@@ -83,18 +77,26 @@ app.post('/todos', verifyToken, async (req, res) => {
 app.get('/todos', verifyToken, async (req, res) => {
     // Return all to-do items
     // All todos are public
-    // But the user must be authenticated to request them
+    // But the user must be authenticated to view them
     
     const query = todoFiltering(req.query);
 
-    const returnedTodos = await todos.find(query);
-    res.send(returnedTodos);
+    if (req.user) {
+        try {
+            const returnedTodos = await todos.find(query);
+            res.send(returnedTodos);
+        } catch (error) {
+            res.status(500).send('Internal server error');
+        }
+    } else {
+        res.status(401).send("Unauthorized to view todos")
+    }
 })
 
 // Update a to-do item
 app.put('/todos', verifyToken, async (req, res) => {
     // Fetch the requested todo item, 
-    // If the current user is the one who crated it, update it
+    // If the current user is the one who created it, update it
     // Otherwise return an error
     const { todoId, title, task } = req.query;
     try {
