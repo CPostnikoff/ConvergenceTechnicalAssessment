@@ -3,10 +3,10 @@ import database from './databaseConnection.js'
 import bodyParser from 'body-parser';
 import users from './models/usersModel.js'
 import todos from './models/todosModel.js'
-// import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import verifyToken from './middleware/verifyToken.js';
 import generateJWT from './middleware/generateToken.js';
+import todoFiltering from './middleware/todoFiltering.js';
 
 const app = express();
 
@@ -30,7 +30,7 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        const foundUser = await users.findOne({ username});
+        const foundUser = await users.findOne({ username });
 
         if (!foundUser) {
             return res.status(401).send('Invalid credentials');
@@ -55,18 +55,27 @@ app.post('/login', async (req, res) => {
 app.post('/todos', verifyToken, async (req, res) => {
     // Validate input and create a to-do item for the authenticated user
     // A user must be authenticated to create a to-do item
-    const { createdBy, title, task } = req.query;
-    var creationDate = new Date()
+    const { title, task } = req.query;
     // TODO: verifiy that all the appropriate data is in the query
-    const newTodoObject = {
-        createdBy: createdBy,
-        title: title,
-        task: task,
-        createdAt: creationDate,
-        updatedAt: creationDate
-    }
 
-    await todos.create(newTodoObject);
+    if (req.user) {
+        if (!title || !task) { 
+            res.status(400).send("Todo's require both a title and task are required")
+        } 
+        var creationDate = new Date()
+        const newTodoObject = {
+            createdBy: req.user.user,
+            title: title,
+            task: task,
+            createdAt: creationDate,
+            updatedAt: creationDate
+        }
+        await todos.create(newTodoObject);
+        res.send(newTodoObject);
+    } else {
+        res.status(401).send("Unauthorized to create a todo")
+    }
+    
     // TODO: validate that the todo was created properly
     res.send("post todos reached")
 });
@@ -75,13 +84,8 @@ app.get('/todos', verifyToken, async (req, res) => {
     // Return all to-do items
     // All todos are public
     // But the user must be authenticated to request them
-    const { filterId, filterTitle, filterTaskDescription, filterUser } = req.query;
-    const query = {
-        ...(filterId && { _id: filterId }),
-        ...(filterTitle && { title: filterTitle }),
-        ...(filterTaskDescription && { task: filterTaskDescription }),
-        ...(filterUser && { createdBy: filterUser }),
-    }
+    
+    const query = todoFiltering(req.query);
 
     const returnedTodos = await todos.find(query);
     res.send(returnedTodos);
