@@ -2,6 +2,7 @@ import express from 'express';
 import database from './databaseConnection.js'
 import bodyParser from 'body-parser';
 import users from './models/usersModel.js'
+import todos from './models/todosModel.js'
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -12,30 +13,85 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 })
 
-app.get('/login', (req, res) => {
-    res.sendFile('login.html', { root: './views' });
+// User registration
+app.post('/register', async (req, res) => {
+    // Validate and store user information in the database
 });
 
+// User login
 app.post('/login', async (req, res) => {
-    console.log("login attempt");
-    var {
-        username,
-        password
-    } = req.body;
-    console.log(username, password)
-    const existingUser = await users.find({ username: username, password: password });
-    if (existingUser) {
-        res.send("Login successful")
+    // Validate user credentials
+});
+
+// Create a to-do item
+app.post('/todos', async (req, res) => {
+    // Validate input and create a to-do item for the authenticated user
+    const { createdBy, title, task } = req.query;
+    var creationDate = new Date()
+    // TODO: verifiy that all the appropriate data is in the query
+    const newTodoObject = {
+        createdBy: createdBy,
+        title: title,
+        task: task,
+        createdAt: creationDate,
+        updatedAt: creationDate
     }
+
+    console.log(newTodoObject);
+    
+    await todos.create(newTodoObject);
+    // TODO: validate that the todo was created properly
+    res.send("post todos reached")
+});
+
+app.get('/todos', async (req, res) => {
+    // Return all to-do items for the authenticated user
+    const listOfTodos = await todos.find({});
+    res.send(listOfTodos);
 })
 
-// app.get('/signup', (req, res) => {})
+// Update a to-do item
+app.put('/todos', async (req, res) => {
+    // Fetch the requested todo item, then update it the authenticated user is the one who made it
+    const { todoId, title, task } = req.query;
 
-// app.get('/getTodos', (req, res) => {})
+    try {
+        const exisitingTodo = await todos.findById(todoId);
+        if (exisitingTodo) {
+            var updateDate = new Date();
+            if (title) {
+                exisitingTodo.title = title;
+            }
+            if (task) {
+                exisitingTodo.task = task;
+            }
+            exisitingTodo.updatedAt = updateDate;
+        }
+        await exisitingTodo.save();
+        res.send(exisitingTodo);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Internal server error');
+    }
+});
 
-// app.post(`/deleteTodo`, (req, res) => {})
+// Delete a to-do item
+app.delete('/todos', async (req, res) => {
+    const { todoId } = req.query;
+    try {
+        const todo = await todos.findById(todoId);
+        if (todo) {
+            await todos.findByIdAndDelete(todoId);
+            res.send('Todo deleted');
+        } else {
+            res.status(404).send('Todo not found');
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Internal server error');
+    }
+});
 
-// app.post(`/updateTodo`, (req, res) => {})
 
 app.listen(3000, () => {
     console.log(`Server is running on port 3000`);
