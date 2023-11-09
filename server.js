@@ -3,41 +3,12 @@ import database from './databaseConnection.js'
 import bodyParser from 'body-parser';
 import users from './models/usersModel.js'
 import todos from './models/todosModel.js'
-import jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import verifyToken from './middleware/verifyToken.js';
+import generateJWT from './middleware/generateToken.js';
 
 const app = express();
-
-async function generateJWT(user) {
-    try {
-        const token = await jwt.sign(
-            { user: user },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-        return token;
-    } catch (error) {
-        return {error: true};
-    }
-}
-
-function verifyToken(req, res, next) {
-    const token = req.headers.authorization;
-    if (!token) {
-        return res.status(401).send('No token provided');
-    }
-    try {
-        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-            if (err) {
-                return res.status(500).send('Failed to authenticate token');
-            }
-            req.user = decoded;
-            next();
-        })
-    } catch (error) {
-        return res.status(401).send('Invalid token');
-    }
-}
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
