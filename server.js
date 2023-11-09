@@ -7,8 +7,6 @@ import todos from './models/todosModel.js'
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const db = database
-
 app.get('/', (req, res) => {
     res.send('Hello World!');
 })
@@ -21,11 +19,14 @@ app.post('/register', async (req, res) => {
 // User login
 app.post('/login', async (req, res) => {
     // Validate user credentials
+    // If valid, create a session for the user
+    // Return the user a token using JWT
 });
 
 // Create a to-do item
 app.post('/todos', async (req, res) => {
     // Validate input and create a to-do item for the authenticated user
+    // A user must be authenticated to create a to-do item
     const { createdBy, title, task } = req.query;
     var creationDate = new Date()
     // TODO: verifiy that all the appropriate data is in the query
@@ -45,14 +46,18 @@ app.post('/todos', async (req, res) => {
 });
 
 app.get('/todos', async (req, res) => {
-    // Return all to-do items for the authenticated user
+    // Return all to-do items
+    // All todos are public
+    // But the user must be authenticated to request them
     const listOfTodos = await todos.find({});
     res.send(listOfTodos);
 })
 
 // Update a to-do item
 app.put('/todos', async (req, res) => {
-    // Fetch the requested todo item, then update it the authenticated user is the one who made it
+    // Fetch the requested todo item, 
+    // If the current user is the one who crated it, update it
+    // Otherwise return an error
     const { todoId, title, task } = req.query;
 
     try {
@@ -77,6 +82,9 @@ app.put('/todos', async (req, res) => {
 
 // Delete a to-do item
 app.delete('/todos', async (req, res) => {
+    // Fetch the requested todo item,
+    // If the current user is the one who crated it, delete it
+    // Otherwise return an error
     const { todoId } = req.query;
     try {
         const todo = await todos.findById(todoId);
