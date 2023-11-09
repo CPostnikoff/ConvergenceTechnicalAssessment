@@ -27,7 +27,7 @@ app.post('/login', async (req, res) => {
         const foundUser = await users.findOne({ username });
 
         if (!foundUser) {
-            return res.status(401).send('Invalid credentials');
+            return res.status(402).send('Invalid credentials');
         }
 
         const correctPassword = await bcrypt.compare(password, foundUser.password);
@@ -36,7 +36,7 @@ app.post('/login', async (req, res) => {
             const token = await generateJWT(foundUser.username);
             res.send(token);
         } else {
-            return res.status(401).send('Invalid credentials');
+            return res.status(402).send('Invalid credentials');
         }
 
     } catch (error) {
