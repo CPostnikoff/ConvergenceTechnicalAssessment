@@ -46,6 +46,7 @@ app.get('/', (req, res) => {
 })
 
 // User registration
+// Not implemented
 app.post('/register', async (req, res) => {
     // Validate and store user information in the database
 });
