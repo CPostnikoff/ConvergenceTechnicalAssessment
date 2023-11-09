@@ -49,8 +49,18 @@ app.get('/todos', async (req, res) => {
     // Return all to-do items
     // All todos are public
     // But the user must be authenticated to request them
-    const listOfTodos = await todos.find({});
-    res.send(listOfTodos);
+    const { filterId, filterTitle, filterTaskDescription, filterUser } = req.query;
+    const query = {
+        ...(filterId && { _id: filterId }),
+        ...(filterTitle && { title: filterTitle }),
+        ...(filterTaskDescription && { task: filterTaskDescription }),
+        ...(filterUser && { createdBy: filterUser }),
+    }
+    
+    console.log(query)
+
+    const returnedTodos = await todos.find(query);
+    res.send(returnedTodos);
 })
 
 // Update a to-do item
@@ -64,12 +74,10 @@ app.put('/todos', async (req, res) => {
         const exisitingTodo = await todos.findById(todoId);
         if (exisitingTodo) {
             var updateDate = new Date();
-            if (title) {
-                exisitingTodo.title = title;
-            }
-            if (task) {
-                exisitingTodo.task = task;
-            }
+        
+            if (title) exisitingTodo.title = title;
+            if (task) exisitingTodo.task = task;
+        
             exisitingTodo.updatedAt = updateDate;
         }
         await exisitingTodo.save();
@@ -99,7 +107,6 @@ app.delete('/todos', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
-
 
 app.listen(3000, () => {
     console.log(`Server is running on port 3000`);
