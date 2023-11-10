@@ -13,16 +13,11 @@ const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-})
-
 app.post('/login', async (req, res) => {
     const { username, password } = req.query;
 
     // Validate that the user has provided a username and password
     if (!username || !password) {
-        // return res.status(400).send({error: 'Username and password are required'});
         return createErrorResponse(res, 400, 'Username and password are required');
     }
 
