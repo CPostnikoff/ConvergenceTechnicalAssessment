@@ -1,8 +1,8 @@
 import express, { query } from 'express';
-import database from './databaseConnection.js'
+import database from './databaseConnection.js';
 import bodyParser from 'body-parser';
-import users from './models/usersModel.js'
-import todos from './models/todosModel.js'
+import users from './models/usersModel.js';
+import todos from './models/todosModel.js';
 import bcrypt from "bcrypt";
 import verifyToken from './middleware/verifyToken.js';
 import generateJWT from './middleware/generateToken.js';
@@ -17,65 +17,76 @@ app.get('/', (req, res) => {
 })
 
 app.post('/login', async (req, res) => {
-    // Extract username and password from the request body (assuming they are in the request body, not query parameters)
     const { username, password } = req.query;
+
+    // Validate that the user has provided a username and password
     if (!username || !password) {
-        return res.status(400).send('Username and password are required');
+        return res.status(400).send({error: 'Username and password are required'});
     }
 
     try {
+        // Check to see if the user exists in the users collection
         const foundUser = await users.findOne({ username });
 
         if (!foundUser) {
-            return res.status(402).send('Invalid credentials');
+            return res.status(402).send({error: 'Invalid credentials'});
         }
 
-        const correctPassword = await bcrypt.compare(password, foundUser.password);
+        // If the user exists, check to see if the password matches
+        try {
+            const correctPassword = await bcrypt.compare(password, foundUser.password);
 
-        if (correctPassword === true) {
-            const token = await generateJWT(foundUser.username);
-            res.send(token);
-        } else {
-            return res.status(402).send('Invalid credentials');
-        }
+            if (correctPassword === true) {
+                // If the password is a match, return a JWT
+                const token = await generateJWT(foundUser.username);
+                res.send(token);
+            } else {
+                return res.status(402).send({error: 'Invalid credentials'});
+            }
+        } catch (error) {
+            return res.status(500).send({error: 'Error with user validation'});
+        }     
 
     } catch (error) {
-        return res.status(500).send('Error occured within login');
+        return res.status(500).send({error: 'Error occured within login'});
     }
 });
 
-
-// Create a to-do item
 app.post('/todos', verifyToken, async (req, res) => {
-    // Validate input and create a to-do item for the authenticated user
-    // A user must be authenticated to create a to-do item
-    const { title, task } = req.query;
-    // TODO: verifiy that all the appropriate data is in the query
-
+    // If the user is authenticated, continue with creating a new todo
     if (req.user) {
-        if (!title || !task) { 
-            res.status(400).send("Todo's require both a title and task are required")
-        } 
-        var creationDate = new Date()
+        const { title, task } = req.query;
+        // Check to make sure the user has provided a title and a task for the todo
+        if (!title || !task) {
+            res.status(400).send({error: "Todo's require both a title and task are required"})
+        }
+        const creationDate = new Date();
+        const createdBy = req.user.user;
+
         const newTodoObject = {
-            createdBy: req.user.user,
-            title: title,
-            task: task,
+            createdBy,
+            title,
+            task,
             createdAt: creationDate,
             updatedAt: creationDate
+        };
+
+        try {
+            await todos.create(newTodoObject);
+            res.send(newTodoObject);
+        } catch (error) {
+            res.status(500).send({error: 'Error creating todo'});
         }
-        await todos.create(newTodoObject);
-        res.send(newTodoObject);
     } else {
-        res.status(401).send("Unauthorized to create a todo")
+        res.status(401).send({error: "Unauthorized to create a todo"});
     }
 });
 
+// get all to-do items
 app.get('/todos', verifyToken, async (req, res) => {
-    // Return all to-do items
-    // All todos are public
-    // But the user must be authenticated to view them
-    
+    // All todos are public, but only authenticated users may view them
+
+    // Customize the search query based on query parameters
     const query = todoFiltering(req.query);
 
     if (req.user) {
@@ -86,15 +97,15 @@ app.get('/todos', verifyToken, async (req, res) => {
             res.status(500).send('Error fetching todos');
         }
     } else {
-        res.status(401).send("Unauthorized to view todos")
+        res.status(401).send({error: "Unauthorized to view todos"});
     }
 })
 
 // Update a to-do item
 app.put('/todos', verifyToken, async (req, res) => {
-    // Fetch the requested todo item, 
+    // Fetch the requested todo item
     // If the current user is the one who created it, update it
-    // Otherwise return an error
+
     const { todoId, title, task } = req.query;
     try {
         const existingTodo = await todos.findById(todoId);
@@ -107,36 +118,35 @@ app.put('/todos', verifyToken, async (req, res) => {
                 await existingTodo.save();
                 res.send(existingTodo);
             } else {
-                res.status(401).send('Unauthorized for editing of this todo');
+                res.status(401).send({error: 'You are not authorized to edit this todo'});
             }
         } else {
-            res.status(404).send('Todo not found');
+            res.status(404).send({error: 'Todo not found'});
         }
     } catch (error) {
-        res.status(500).send('Error fetching todos');
+        res.status(500).send({error: 'Error fetching todos'});
     }
 });
 
 // Delete a to-do item
 app.delete('/todos', verifyToken, async (req, res) => {
-    // Fetch the requested todo item,
-    // If the current user is the one who created it, delete it
-    // Otherwise return an error
+    // Fetch the requested todo item by id
+    // If the user making the delete request is the creator, delete it
     const { todoId } = req.query;
     try {
         const todo = await todos.findById(todoId);
         if (todo) {
             if (req.user.user == todo.createdBy) {
-            await todos.findByIdAndDelete(todoId);
-            res.send('Todo deleted');
+                await todos.findByIdAndDelete(todoId);
+                res.send('Todo deleted');
             } else {
-                res.status(401).send('Unauthorized for deletion of this todo');
+                res.status(401).send({error: 'Unauthorized for deletion of this todo'});
             }
         } else {
-            res.status(404).send('Todo not found');
+            res.status(404).send({error: 'Todo not found'});
         }
     } catch (error) {
-        res.status(500).send('Error fetching todos');
+        res.status(500).send({error: 'Error fetching todos'});
     }
 });
 

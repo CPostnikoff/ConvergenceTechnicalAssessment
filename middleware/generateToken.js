@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 
 async function generateJWT(user) {
     try {
+        // Generate a JWT with the user's username and the secret key
         const token = await jwt.sign(
             { user: user },
             process.env.JWT_SECRET,
@@ -9,7 +10,7 @@ async function generateJWT(user) {
         );
         return token;
     } catch (error) {
-        return {error: true};
+        return { error: true };
     }
 }
 
