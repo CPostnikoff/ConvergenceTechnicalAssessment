@@ -41,7 +41,7 @@ app.post('/login', async (req, res) => {
             if (correctPassword === true) {
                 // If the password is a match, return a JWT
                 const token = await generateJWT(foundUser.username);
-                res.send(token);
+                res.send({authorization: token});
             } else {
                 return createErrorResponse(res, 402, 'Invalid credentials');
             }
@@ -99,6 +99,7 @@ app.get('/todos', verifyToken, async (req, res) => {
             return createErrorResponse(res, 500, 'Error fetching todos');
         }
     } else {
+        console.log("Unauthorized to view todos")
         return createErrorResponse(res, 401, 'Unauthorized to view todos');
     }
 })
