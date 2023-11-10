@@ -1,7 +1,14 @@
 # Convergence Technical Assessment
 
+This assessment project is a simple CRUD API for managing Todo items stored within a database.  
+
+## Technologies Used
+- Node.js
+- Express.js
+- JSON Web Token Authentication
+- MongoDB
+- Mongoose
+
 ## Details
-- I opted to complete the back end exercise
-- The database is live and hosted through MongoDB Atlas
+- The database is live and hosted on MongoDB Atlas
 - In-line comments were left to help illustrate decision making during development
-- This assessment was refreshing and fun!
