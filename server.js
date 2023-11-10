@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import verifyToken from './middleware/verifyToken.js';
 import generateJWT from './middleware/generateToken.js';
 import todoFiltering from './middleware/todoFiltering.js';
+import createErrorResponse from './middleware/createErrorResponse.js';
 
 const app = express();
 
@@ -21,7 +22,8 @@ app.post('/login', async (req, res) => {
 
     // Validate that the user has provided a username and password
     if (!username || !password) {
-        return res.status(400).send({error: 'Username and password are required'});
+        // return res.status(400).send({error: 'Username and password are required'});
+        return createErrorResponse(res, 400, 'Username and password are required');
     }
 
     try {
@@ -29,7 +31,7 @@ app.post('/login', async (req, res) => {
         const foundUser = await users.findOne({ username });
 
         if (!foundUser) {
-            return res.status(402).send({error: 'Invalid credentials'});
+            return createErrorResponse(res, 402, 'Invalid credentials');
         }
 
         // If the user exists, check to see if the password matches
@@ -41,14 +43,14 @@ app.post('/login', async (req, res) => {
                 const token = await generateJWT(foundUser.username);
                 res.send(token);
             } else {
-                return res.status(402).send({error: 'Invalid credentials'});
+                return createErrorResponse(res, 402, 'Invalid credentials');
             }
         } catch (error) {
-            return res.status(500).send({error: 'Error with user validation'});
+            return createErrorResponse(res, 402, 'Error with user validation');
         }     
 
     } catch (error) {
-        return res.status(500).send({error: 'Error occured within login'});
+        return createErrorResponse(res, 500, 'Error occured within login');
     }
 });
 
@@ -58,7 +60,7 @@ app.post('/todos', verifyToken, async (req, res) => {
         const { title, task } = req.query;
         // Check to make sure the user has provided a title and a task for the todo
         if (!title || !task) {
-            res.status(400).send({error: "Todo's require both a title and task are required"})
+            return createErrorResponse(res, 400, 'Todos require both a title and task');
         }
         const creationDate = new Date();
         const createdBy = req.user.user;
@@ -75,10 +77,10 @@ app.post('/todos', verifyToken, async (req, res) => {
             await todos.create(newTodoObject);
             res.send(newTodoObject);
         } catch (error) {
-            res.status(500).send({error: 'Error creating todo'});
+            return createErrorResponse(res, 500, 'Error creating todo');
         }
     } else {
-        res.status(401).send({error: "Unauthorized to create a todo"});
+        return createErrorResponse(res, 401, 'Unauthorized, new todo not created');
     }
 });
 
@@ -94,10 +96,10 @@ app.get('/todos', verifyToken, async (req, res) => {
             const returnedTodos = await todos.find(query);
             res.send(returnedTodos);
         } catch (error) {
-            res.status(500).send('Error fetching todos');
+            return createErrorResponse(res, 500, 'Error fetching todos');
         }
     } else {
-        res.status(401).send({error: "Unauthorized to view todos"});
+        return createErrorResponse(res, 401, 'Unauthorized to view todos');
     }
 })
 
@@ -118,13 +120,13 @@ app.put('/todos', verifyToken, async (req, res) => {
                 await existingTodo.save();
                 res.send(existingTodo);
             } else {
-                res.status(401).send({error: 'You are not authorized to edit this todo'});
+                return createErrorResponse(res, 401, 'You are not authorized to edit this todo');
             }
         } else {
-            res.status(404).send({error: 'Todo not found'});
+            return createErrorResponse(res, 404, 'Todo not found');
         }
     } catch (error) {
-        res.status(500).send({error: 'Error fetching todos'});
+        return createErrorResponse(res, 500, 'Error fetching todos');
     }
 });
 
@@ -140,13 +142,13 @@ app.delete('/todos', verifyToken, async (req, res) => {
                 await todos.findByIdAndDelete(todoId);
                 res.send('Todo deleted');
             } else {
-                res.status(401).send({error: 'Unauthorized for deletion of this todo'});
+                return createErrorResponse(res, 401, 'Unauthorized for deletion of this todo');
             }
         } else {
-            res.status(404).send({error: 'Todo not found'});
+            return createErrorResponse(res, 404, 'Todo not found');
         }
     } catch (error) {
-        res.status(500).send({error: 'Error fetching todos'});
+        return createErrorResponse(res, 500, 'Error fetching todos');
     }
 });
 
