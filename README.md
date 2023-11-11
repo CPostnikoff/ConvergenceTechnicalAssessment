@@ -44,21 +44,21 @@ This assessment project is a simple CRUD API for managing Todos that are stored 
 - **Request Query Parameters:**
     ```json
     {
-        (optional)"todoId": "<id of desired todo>",
-        (optional)"todoCreator": "<creator's username>",
-        (optional)"todoTitle": "<task title>",
-        (optional)"todoTask": "<task description>"
+        "(optional) todoId": "<id of desired todo>",
+        "(optional) todoCreator": "<creator's username>",
+        "(optional) todoTitle": "<task title>",
+        "(optional) todoTask": "<task description>"
     }
     ```
 - **Successful Response:** 
     ```json
     {
         "_id": "<todoId>",
-        "createdBy": <"username of the todo creator">,
+        "createdBy": "<username of the todo creator>",
         "title": "<todo title>",
         "task": "<todo task>",
-        "createdAt": Date,
-        "updatedAt": Date,
+        "createdAt": "Date",
+        "updatedAt": "Date",
     }
     ```
 ---
@@ -78,8 +78,8 @@ This assessment project is a simple CRUD API for managing Todos that are stored 
         "createdBy": "<username of the todo creator>",
         "title": "<todo title>",
         "task": "<todo task>",
-        "createdAt": Date,
-        "updatedAt": Date,
+        "createdAt": "<Date>",
+        "updatedAt": "<Date>",
     }
     ```
 ---
@@ -89,8 +89,8 @@ This assessment project is a simple CRUD API for managing Todos that are stored 
     ```json
     {
         "todoId": "<id of todo to update>",
-        (optional)"title": "<new todo title>",
-        (optional)"task": "<new todo description>"
+        "(optional) title": "<new todo title>",
+        "(optional) task": "<new todo description>"
     }
     ```
 - **Successful Response:**
@@ -100,8 +100,8 @@ This assessment project is a simple CRUD API for managing Todos that are stored 
         "createdBy": "<username of the todo creator>",
         "title": "<new todo title>",
         "task": "<new todo description>",
-        "createdAt": Date,
-        "updatedAt": Date,
+        "createdAt": "Date",
+        "updatedAt": "Date",
     }
     ```
 ---
