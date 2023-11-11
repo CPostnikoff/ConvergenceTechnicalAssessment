@@ -136,7 +136,7 @@ app.delete('/todos', verifyToken, async (req, res) => {
         if (todo) {
             if (req.user.user == todo.createdBy) {
                 await todos.findByIdAndDelete(todoId);
-                res.send('Todo deleted');
+                res.send({"success": 'Todo deleted'});
             } else {
                 return createErrorResponse(res, 401, 'Unauthorized for deletion of this todo');
             }
