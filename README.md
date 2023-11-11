@@ -10,9 +10,9 @@ This assessment project is a simple CRUD API for managing Todos that are stored 
 - MongoDB
 - Mongoose
 
-## Details
+## Assignment Detail Summary
 - To request todos and submit a new todo, the user must be authenticated,
-- A given todo can only be updated or delted by the user who created it,
+- A given todo can only be updated or deleted by the user who created it,
 - A request to get todos can be filtered by:
     - todoId
     - todoTitle
