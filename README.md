@@ -57,8 +57,8 @@ This assessment project is a simple CRUD API for managing Todos that are stored 
         "createdBy": "<username of the todo creator>",
         "title": "<todo title>",
         "task": "<todo task>",
-        "createdAt": "Date",
-        "updatedAt": "Date",
+        "createdAt": "<Date>",
+        "updatedAt": "<Date>",
     }
     ```
 ---
@@ -100,8 +100,8 @@ This assessment project is a simple CRUD API for managing Todos that are stored 
         "createdBy": "<username of the todo creator>",
         "title": "<new todo title>",
         "task": "<new todo description>",
-        "createdAt": "Date",
-        "updatedAt": "Date",
+        "createdAt": "<Date>",
+        "updatedAt": "<Date>",
     }
     ```
 ---
